@@ -1,0 +1,12 @@
+.control-container {
+  display: flex;
+  flex-direction: row;
+}
+
+.create-button {
+  background-color: green;
+}
+
+.delete-button {
+  background-color: crimson;
+}
