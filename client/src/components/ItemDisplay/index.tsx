@@ -6,11 +6,11 @@ import NameForm from '../NameForm';
 interface Props {
   id: string,
   className: string,
-  create: (name: string) => void,
-  delete: (id: string) => void,
-  show: (id: string) => void,
-  items: object,
-  itemOnDisplayId?: string 
+  handleCreate: (name: string) => void,
+  handleTrash: (id: number) => void,
+  show: (id: number) => void,
+  items: JSX.Element[],
+  itemOnDisplayId?: number 
 }
 
 interface State {
@@ -28,21 +28,17 @@ class ItemDisplay extends React.Component<Props, State> {
     }
   }
 
-  handleCreate = (name: string) => {
-    this.props.create(name);
-    this.hideForm();
-  }
-
-  handleDelete = (id: string) => {
-    this.props.delete(id);
-  }
-
   showForm = () => {
     this.setState({ isFormVisible: true });
   }
 
   hideForm = () => {
     this.setState({ isFormVisible: false });
+  }
+
+  handleSubmit = (name: string): void => {
+    this.props.handleCreate(name);
+    this.hideForm();
   }
 
   render() {
@@ -60,7 +56,7 @@ class ItemDisplay extends React.Component<Props, State> {
             this.props.itemOnDisplayId ? 
             <button 
               className="delete-button"
-              onClick={() => this.handleDelete(this.props.itemOnDisplayId!)}>
+              onClick={() => this.props.handleTrash(this.props.itemOnDisplayId!)}>
               -
             </button>
             :
@@ -73,7 +69,7 @@ class ItemDisplay extends React.Component<Props, State> {
         <NameForm 
           id={this.newItemFormId}
           isVisible={this.state.isFormVisible}
-          submit={this.handleCreate}
+          submit={this.handleSubmit}
           blur={this.hideForm} 
         />
       </div>

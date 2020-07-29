@@ -21,16 +21,16 @@ namespace Galizar.LeNotes.Web.Controllers
       _service = service;
     }
 
-    [HttpPost()]
+    [HttpPost("{name}/{groupId}")]
     [ProducesResponseType(StatusCodes.Status201Created)]
-    public async Task<ActionResult<Note>> CreateNote(long groupId, string name)
+    public async Task<ActionResult<Note>> CreateNote(string name, long groupId)
     {
       var note = await _service.CreateNoteAsync(name, groupId);
 
       return CreatedAtAction(nameof(GetNote), new { id = note.Id }, note);
     }
 
-    [HttpGet("/")]
+    [HttpGet()]
     public async Task<IEnumerable<Note>> AllNotes()
     {
       return await _service.GetAllNotes();
@@ -70,7 +70,23 @@ namespace Galizar.LeNotes.Web.Controllers
       return NoContent();
     }
 
-    [HttpDelete("delete/{id}")]
+    [HttpPut("trash/{id}")]
+    public async Task<IActionResult> TrashNote(long id)
+    {
+      var note = await GetNote(id);
+      await _service.TrashNote(note.Value);
+      return NoContent();
+    }
+
+    [HttpPut("restore/{id}")]
+    public async Task<IActionResult> RestoreNote(long id)
+    {
+      var note = await GetNote(id);
+      await _service.RestoreNote(note.Value);
+      return NoContent();
+    }
+
+    [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteNote(long id)
     {
       var note = await GetNote(id);

@@ -10,7 +10,7 @@ using Galizar.LeNotes.Core.Interfaces;
 namespace Galizar.LeNotes.Web.Controllers
 {
   [ApiController]
-  [Route("[controller]")]
+  [Route("api/[controller]")]
   public class GroupsController : ControllerBase
   {
     private readonly IGroupService _service;
@@ -20,13 +20,13 @@ namespace Galizar.LeNotes.Web.Controllers
       _service = service;
     }
 
-    [HttpGet("/")]
+    [HttpGet()]
     public async Task<IEnumerable<Group>> AllGroups()
     {
       return await _service.GetAllGroups();
     }
 
-    [HttpPost("create/{name}")]
+    [HttpPost("{name}")]
     public async Task<ActionResult<Group>> CreateGroup(string name)
     {
       var group = await _service.CreateGroupAsync(name);
@@ -53,7 +53,23 @@ namespace Galizar.LeNotes.Web.Controllers
       return NoContent();
     }
 
-    [HttpDelete("delete/{id}")]
+    [HttpPut("trash/{id}")]
+    public async Task<IActionResult> TrashNote(long id)
+    {
+      var group = await GetGroup(id);
+      await _service.TrashGroup(group.Value);
+      return NoContent();
+    }
+
+    [HttpPut("restore/{id}")]
+    public async Task<IActionResult> RestoreNote(long id)
+    {
+      var group = await GetGroup(id);
+      await _service.RestoreGroup(group.Value);
+      return NoContent();
+    }
+
+    [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteGroup(long id)
     {
       var group = await GetGroup(id);

@@ -9,7 +9,9 @@ namespace Galizar.LeNotes.Core.Interfaces {
     Task<Group> CreateGroupAsync(string name);
     Task<IEnumerable<Group>> GetAllGroups();
     Task<Group> GetGroupByIdAsync(long id);
-    Task DeleteGroupAsync(Group group);
     Task RenameGroupAsync(Group group, string newName);
+    Task TrashGroup(Group group);
+    Task RestoreGroup(Group group);
+    Task DeleteGroupAsync(Group group);
   }
 }

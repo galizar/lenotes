@@ -25,10 +25,21 @@ namespace Web
         }
 
         public IConfiguration Configuration { get; }
+        readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors(options => 
+            {
+                options.AddPolicy(name: MyAllowSpecificOrigins,
+                                  builder =>
+                                  {
+                                      builder.WithOrigins("http://localhost:8080");
+                                      builder.AllowAnyMethod();
+                                  });
+            });
+
             services.AddControllers();
             services.AddDbContext<LeNotesContext>(c => c.UseInMemoryDatabase("App Context"));
             ConfigureCoreServices.Configure(services, Configuration);
@@ -45,6 +56,8 @@ namespace Web
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseCors(MyAllowSpecificOrigins);
 
             app.UseAuthorization();
 

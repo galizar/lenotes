@@ -17,7 +17,7 @@ class NameForm extends React.Component<Props, State> {
     this.state = {value: '',};
   }
 
-  handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  handleChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     this.setState({value: event.target.value});
   }
 
@@ -39,7 +39,6 @@ class NameForm extends React.Component<Props, State> {
             onChange={this.handleChange}
             onBlur={this.props.blur} />
         </label>
-        <input type="submit" value="Submit" />
       </form>
     )
   }

@@ -1,13 +1,15 @@
 import React from 'react';
 import './style.css';
 
+import NoteService from '../../services/NoteService';
+
 interface Props {
   id: string,
   className: string,
   groupName: string,
   noteName: string,
   noteContent: string,
-  save: (content: string) => void,
+  noteId?: number,
 }
 
 class Editor extends React.Component<Props> {
@@ -21,7 +23,13 @@ class Editor extends React.Component<Props> {
   handleTextChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const text = event.target.value;
     window.clearTimeout(this.saveTimeout);
-    this.saveTimeout = window.setTimeout(() => this.props.save(text), 2000);
+    this.saveTimeout = window.setTimeout(() => this.saveContent(text), 2000);
+  }
+
+  saveContent = (content: string) => {
+    if (this.props.noteId) {
+      NoteService.setContent(this.props.noteId, content);
+    }
   }
 
   render() {

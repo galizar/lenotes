@@ -41,6 +41,20 @@ namespace Galizar.LeNotes.Core.Services
       await _repository.UpdateAsync(group);
     }
 
+    public async Task TrashGroup(Group group)
+    {
+      if (group.IsTrashed) return;
+      group.IsTrashed = true;
+      await _repository.UpdateAsync(group);
+    }
+
+    public async Task RestoreGroup(Group group)
+    {
+      if (!group.IsTrashed) return;
+      group.IsTrashed = false;
+      await _repository.UpdateAsync(group);
+    }
+
     public async Task DeleteGroupAsync(Group group)
     {
       await _repository.DeleteAsync(group);

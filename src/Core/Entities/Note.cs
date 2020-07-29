@@ -2,7 +2,6 @@ using System.Text.Json;
 
 namespace Galizar.LeNotes.Core.Entities 
 {
-
   public class Note : BaseEntity 
   {
     public string Name { get; set; }
@@ -14,6 +13,7 @@ namespace Galizar.LeNotes.Core.Entities
       Name = name;
       GroupId = groupId;
       Content = "";
+      IsTrashed = false;
     }
 
     public Note(string name, long groupId, string content) 

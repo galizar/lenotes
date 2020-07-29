@@ -9,6 +9,7 @@ namespace Galizar.LeNotes.Core.Entities
     public Group(string name) 
     {
       Name = name;
+      IsTrashed = false;
     }
 
     public Group DeepCopy()

@@ -12,6 +12,8 @@ namespace Galizar.LeNotes.Core.Interfaces {
     Task SetContentAsync(Note note, string content);
     Task RenameNoteAsync(Note note, string newName);
     Task MoveToGroupAsync(Note note, long groupId);
+    Task TrashNote(Note note);
+    Task RestoreNote(Note note);
     Task DeleteNoteAsync(Note note);
   }
 }

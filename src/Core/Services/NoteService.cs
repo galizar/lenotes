@@ -50,6 +50,20 @@ namespace Galizar.LeNotes.Core.Services
       await _repository.UpdateAsync(note);
     }
 
+    public async Task TrashNote(Note note)
+    {
+      if (note.IsTrashed) return;
+      note.IsTrashed = true;
+      await _repository.UpdateAsync(note);
+    }
+
+    public async Task RestoreNote(Note note)
+    {
+      if (!note.IsTrashed) return;
+      note.IsTrashed = false;
+      await _repository.UpdateAsync(note);
+    }
+
     public async Task DeleteNoteAsync(Note note) 
     {
       await _repository.DeleteAsync(note);

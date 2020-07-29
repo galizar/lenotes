@@ -1,17 +1,15 @@
 import React from 'react';
 
 import ItemDisplay from '../ItemDisplay';
-import { IdGroupMap } from '../App'
+import GroupService, { IGroup } from '../../services/GroupService';
+import NoteService from '../../services/NoteService';
 
 interface Props {
   id: string,
   className: string,
-  createGroup: (name: string) => void,
-  deleteGroup: (id: string) => void,
-  showGroup: (id: string) => void,
-  groups: IdGroupMap,
-  groupOnDisplayId?: string,
-  moveNote: (id: string, toGroupId: string) => void,
+  showGroup: (id: number) => void,
+  groups: IGroup[],
+  groupOnDisplayId?: number,
 }
 
 class GroupDisplay extends React.Component<Props> {
@@ -19,35 +17,47 @@ class GroupDisplay extends React.Component<Props> {
     super(props);
   }
 
-  onNoteDrop = (event: React.DragEvent<HTMLButtonElement>, toGroupId: string) => {
+  onNoteDrop = (event: React.DragEvent<HTMLButtonElement>, toGroupId: number) => {
     event.preventDefault();
     const noteId = event.dataTransfer.getData("text");
-    this.props.moveNote(noteId, toGroupId);
+    NoteService.move(parseInt(noteId), toGroupId);
+  }
+
+  handleCreate = (name: string): void => {
+    GroupService.create(name);
+    // TODO: local storage create
+  }
+
+  handleTrash = (id: number): void => {
+    GroupService.trash(id);
+    // TODO: cascade trash all notes inside the group
+    // TODO: local storage trash
   }
 
   render() {
-    const items = Object.entries(this.props.groups).map(idGroupPair => {
-      let [id, group] = idGroupPair;
-
-      return (
-        <button
-          className={this.props.groupOnDisplayId === id ? 'selected' : ''}
-          key={id}
-          onClick={() => this.props.showGroup(id)}
-          onDragOver={event => event.preventDefault()}
-          onDrop={event => this.onNoteDrop(event, id)}
-        >
-          {group.name}
-        </button>
-      );
-    });
+    const items = 
+      this.props.groups
+        .filter(group => !group.isTrashed)
+        .map(group => {
+          return (
+            <button
+              className={this.props.groupOnDisplayId === group.id ? 'selected' : ''}
+              key={group.id}
+              onClick={() => this.props.showGroup(group.id)}
+              onDragOver={event => event.preventDefault()}
+              onDrop={event => this.onNoteDrop(event, group.id)}
+            >
+              {group.name}
+            </button>
+          );
+        });
     
     return (
-      <ItemDisplay 
+      <ItemDisplay
         id={this.props.id}
         className={this.props.className}
-        create={this.props.createGroup}
-        delete={this.props.deleteGroup}
+        handleCreate={this.handleCreate}
+        handleTrash={this.handleTrash}
         show={this.props.showGroup}
         items={items}
         itemOnDisplayId={this.props.groupOnDisplayId}/>

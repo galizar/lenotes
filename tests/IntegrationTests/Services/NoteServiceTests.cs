@@ -6,8 +6,9 @@ using Microsoft.EntityFrameworkCore;
 using Xunit;
 
 using Galizar.LeNotes.Core.Entities;
-using Galizar.LeNotes.Infrastructure.Data;
+using Galizar.LeNotes.Core.Interfaces;
 using Galizar.LeNotes.Core.Services;
+using Galizar.LeNotes.Infrastructure.Data;
 
 namespace Galizar.LeNotes.Tests.IntegrationTests.Services
 {
@@ -17,7 +18,7 @@ namespace Galizar.LeNotes.Tests.IntegrationTests.Services
     private readonly Note _testNote = new Note("test note", 1);
     private readonly LeNotesContext _leNotesContext;
     private readonly EfRepository<Note> _notesRepo;
-    private readonly NoteService _noteService;
+    private readonly INoteService _noteService;
 
     public NoteServiceTests()
     {
