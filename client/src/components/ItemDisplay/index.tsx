@@ -7,78 +7,127 @@ interface Props {
   id: string,
   className: string,
   handleCreate: (name: string) => void,
-  handleTrash: (id: number) => void,
+  handleDelete: (id: number) => void,
+  handleRename: (id: number, newName: string) => void,
+  handleRestore: (id: number) => void,
   show: (id: number) => void,
   items: JSX.Element[],
-  itemOnDisplayId?: number 
+  itemLabel: string,
+  itemOnDisplayId?: number,
+  isDisplayingTrash: boolean,
 }
 
 interface State {
-  isFormVisible: boolean
+  isCreateFormVisible: boolean,
+  isRenameFormVisible: boolean
 }
 
 class ItemDisplay extends React.Component<Props, State> {
 
-  newItemFormId = `${this.props.id}-form`;
+  itemFormId = `${this.props.id}-form`;
 
   constructor(props: Props) {
     super(props);
     this.state = {
-      isFormVisible: false,
+      isCreateFormVisible: false,
+      isRenameFormVisible: false,
     }
   }
 
-  showForm = () => {
-    this.setState({ isFormVisible: true });
+  showCreateForm = () => {
+    this.setState({ isCreateFormVisible: true });
   }
 
-  hideForm = () => {
-    this.setState({ isFormVisible: false });
+  hideCreateForm = () => {
+    this.setState({ isCreateFormVisible: false });
+  }
+  
+  showRenameForm = () => {
+    this.setState({ isRenameFormVisible: true });
+  }
+  
+  hideRenameForm = () => {
+    this.setState({ isRenameFormVisible: false});
   }
 
-  handleSubmit = (name: string): void => {
-    this.props.handleCreate(name);
-    this.hideForm();
+  handleSubmit = (value: string): void => {
+    if (this.state.isCreateFormVisible) {
+      this.props.handleCreate(value);
+      this.hideCreateForm();
+    } else {
+      this.props.handleRename(this.props.itemOnDisplayId!, value);
+      this.hideRenameForm();
+    }
   }
 
   render() {
+    const isDisplayingTrash = this.props.isDisplayingTrash;
+    const itemOnDisplayId = this.props.itemOnDisplayId;
+    
     return (
       <div id={this.props.id} className={this.props.className}>
 
         <div className="control-container">
-          <button 
-            className="create-button"
-            onClick={() => this.showForm()}>
-            +
-          </button>
-
+          <span>{this.props.itemLabel}</span>
           {
-            this.props.itemOnDisplayId ? 
-            <button 
-              className="delete-button"
-              onClick={() => this.props.handleTrash(this.props.itemOnDisplayId!)}>
-              -
-            </button>
-            :
-            null
+            !isDisplayingTrash ?
+              <button 
+                className="create-button"
+                onClick={() => this.showCreateForm()}>
+                +
+              </button>
+              :
+              null
+          }
+          {
+            isDisplayingTrash && itemOnDisplayId ?
+              <button 
+                className="restore-button"
+                onClick={() => this.props.handleRestore(itemOnDisplayId)}
+              >
+                Restore
+              </button>
+              :
+              null  
+          }
+          {
+            itemOnDisplayId ? 
+              <button 
+                className="delete-button"
+                onClick={() => this.props.handleDelete(itemOnDisplayId)}>
+                -
+              </button>
+              :
+              null
+          }
+          {
+            !isDisplayingTrash && itemOnDisplayId ?
+              <button
+                className="rename-button"  
+                onClick={() => this.showRenameForm()}
+              >
+                Rename
+              </button>  
+              :
+              null  
           }
         </div>
 
         {this.props.items}
 
         <NameForm 
-          id={this.newItemFormId}
-          isVisible={this.state.isFormVisible}
+          id={this.itemFormId}
+          isVisible={this.state.isCreateFormVisible || this.state.isRenameFormVisible}
           submit={this.handleSubmit}
-          blur={this.hideForm} 
+          blur={this.state.isCreateFormVisible ? this.hideCreateForm : this.hideRenameForm} 
         />
       </div>
     )
   }
 
   componentDidUpdate() {
-    if (this.state.isFormVisible) {
-      const form = document.getElementById(this.newItemFormId) as HTMLElement;
+    if (this.state.isCreateFormVisible || this.state.isRenameFormVisible) {
+      const form = document.getElementById(this.itemFormId) as HTMLElement;
       const inputField = form.children[0] as HTMLInputElement;
       inputField.focus();
     }

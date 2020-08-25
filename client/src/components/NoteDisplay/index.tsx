@@ -1,7 +1,9 @@
 import React from 'react';
 
-import NoteService, { INote } from '../../services/NoteService';
+import INote from '../../interfaces/INote';
+import NoteService from '../../services/NoteService';
 import ItemDisplay from '../ItemDisplay';
+import LocalNoteService from '../../services/LocalNoteService';
 
 interface Props {
   id: string,
@@ -9,7 +11,9 @@ interface Props {
   showNote: (id: number) => void,
   notes: INote[],
   noteOnDisplayId?: number,
-  groupOnDisplayId?: number
+  groupOnDisplayId: number,
+  localService: LocalNoteService,
+  isDisplayingTrash: boolean,
 }
 
 class NoteDisplay extends React.Component<Props> {
@@ -18,14 +22,40 @@ class NoteDisplay extends React.Component<Props> {
   }
 
   handleCreate = (name: string): void =>  {
-    let groupId = this.props.groupOnDisplayId ? this.props.groupOnDisplayId : -1;
+    let groupId = this.props.groupOnDisplayId;
+    let note = this.props.localService.create(name, groupId);
+    this.props.showNote(note.id);
     NoteService.create(name, groupId);
-    // TODO: local storage create
   }
 
+  handleDelete = (id: number): void => {
+    const noteName = this.props.localService.get(id).name;
+    const shouldDelete = confirm(
+      `You are about to delete ${noteName}. BEWARE: This operation can not be reversed`
+    );
+    if (shouldDelete) {
+      this.props.localService.delete(id);
+      NoteService.delete(id);
+    }
+  }
+  
+  handleRename = (id: number, newName: string): void => {
+    this.props.localService.rename(id, newName);
+    NoteService.rename(id, newName);
+  }
+  
+  handleRestore = (id: number): void => {
+    this.props.localService.restore(id);
+    NoteService.restore(id);
+  }
+  
   handleTrash = (id: number): void => {
-    NoteService.trash(id);
-    // TODO: local storage trash
+    const noteName = this.props.localService.get(id).name;
+    const shouldTrash = confirm(`Trash ${noteName}?`);
+    if (shouldTrash) {
+      this.props.localService.trash(id);
+      NoteService.trash(id);
+    }
   }
 
   onNoteDragStart = (event: React.DragEvent<HTMLButtonElement>, noteId: number): void => {
@@ -35,7 +65,6 @@ class NoteDisplay extends React.Component<Props> {
   render() {
     const items = 
       this.props.notes
-        .filter(note => !note.isTrashed)
         .map(note => {
           return (
             <button
@@ -55,10 +84,14 @@ class NoteDisplay extends React.Component<Props> {
         id={this.props.id}
         className={this.props.className}
         handleCreate={this.handleCreate}
-        handleTrash={this.handleTrash}
+        handleDelete={this.props.isDisplayingTrash ? this.handleDelete : this.handleTrash}
+        handleRename={this.handleRename}
+        handleRestore={this.handleRestore}
         show={this.props.showNote}
         items={items}
+        itemLabel={!this.props.isDisplayingTrash ? 'Notes' : 'Trashed notes'}
         itemOnDisplayId={this.props.noteOnDisplayId}
+        isDisplayingTrash={this.props.isDisplayingTrash}
       />
     );
   }

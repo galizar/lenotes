@@ -2,6 +2,7 @@ import React from 'react';
 import './style.css';
 
 import NoteService from '../../services/NoteService';
+import LocalNoteService from '../../services/LocalNoteService';
 
 interface Props {
   id: string,
@@ -10,6 +11,8 @@ interface Props {
   noteName: string,
   noteContent: string,
   noteId?: number,
+  localNoteService: LocalNoteService,
+  isDisplayingTrash: boolean,
 }
 
 class Editor extends React.Component<Props> {
@@ -28,27 +31,46 @@ class Editor extends React.Component<Props> {
 
   saveContent = (content: string) => {
     if (this.props.noteId) {
-      NoteService.setContent(this.props.noteId, content);
+      this.props.localNoteService.setContent(this.props.noteId, content);
+      NoteService.setContent({
+        id: this.props.noteId, 
+        content
+      });
     }
   }
 
-  render() {
-    const groupName = this.props.groupName;
-    const noteDisplayed = this.props.noteName !== '';
+  EditorHeader = (props: Props) => {
+    let group: string;
 
+    if (props.groupName !== '') {
+      group = props.groupName;
+    } else if (props.isDisplayingTrash) {
+      group = 'Trash'
+    } else {
+      group = 'All Notes';
+    }
+
+    return (
+      <div id="editor-header">
+        <span id="group-header">{group}</span>
+        <span id="note-header">{props.noteName}</span>
+      </div>
+    )
+  }
+
+  render() {
     return (
       <div id={this.props.id} className={this.props.className}>
 
-        {
-          noteDisplayed ? 
-          <div id="note-info">
-            <p> {groupName ? `${groupName} >` : ''} {`${this.props.noteName}`} </p>
-          </div>
-          : 
-          null
-        }
+        <this.EditorHeader {...this.props} />
 
-        <textarea id="note" onChange={this.handleTextChange}>
+        <textarea 
+          id="note" 
+          readOnly={this.props.isDisplayingTrash}
+          onChange={this.handleTextChange}
+          placeholder={this.props.noteId ? 'This note is empty'
+                                         : 'Select a note to display its content'}
+        >
         </textarea>
       </div>
     );

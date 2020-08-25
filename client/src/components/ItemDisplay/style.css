@@ -10,3 +10,7 @@
 .delete-button {
   background-color: crimson;
 }
+
+.selected {
+  background-color: lightcoral;
+}

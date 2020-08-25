@@ -4,21 +4,29 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-using Galizar.LeNotes.Infrastructure.Data;
 using Galizar.LeNotes.Core.Entities;
 using Galizar.LeNotes.Core.Interfaces;
+using Galizar.LeNotes.Core.Services.Local;
+using Galizar.LeNotes.Web.Controllers.DTOs;
 
 namespace Galizar.LeNotes.Web.Controllers
 {
+  public class NoteContentDTO {
+    public long Id { get; set; }
+    public string Content { get; set; }
+  }
+
   [ApiController]
   [Route("api/[controller]")]
   public class NotesController : ControllerBase
   {
     private readonly INoteService _service;
+    private readonly ISelectionService<Note> _selectionService;
 
-    public NotesController(INoteService service)
+    public NotesController(INoteService service, ISelectionService<Note> selectionService)
     {
       _service = service;
+      _selectionService = selectionService;
     }
 
     [HttpPost("{name}/{groupId}")]
@@ -33,7 +41,7 @@ namespace Galizar.LeNotes.Web.Controllers
     [HttpGet()]
     public async Task<IEnumerable<Note>> AllNotes()
     {
-      return await _service.GetAllNotes();
+      return await _service.GetAllNotesAsync();
     }
 
     [HttpGet("{id}")]
@@ -54,11 +62,11 @@ namespace Galizar.LeNotes.Web.Controllers
       return NoContent();
     }
 
-    [HttpPut("setContent/{id}/{content}")]
-    public async Task<IActionResult> SetContent(long id, string content)
-    {
-      var note = await GetNote(id);
-      await _service.SetContentAsync(note.Value, content);
+    [HttpPut("setContent")]
+    public async Task<IActionResult> SetContent([FromBody] NoteContentDTO dto)
+    { 
+      var note = await GetNote(dto.Id);
+      await _service.SetContentAsync(note.Value, dto.Content);
       return NoContent();
     }
 
@@ -74,7 +82,21 @@ namespace Galizar.LeNotes.Web.Controllers
     public async Task<IActionResult> TrashNote(long id)
     {
       var note = await GetNote(id);
-      await _service.TrashNote(note.Value);
+      await _service.TrashNoteAsync(note.Value);
+      return NoContent();
+    }
+
+    [HttpPut("trash")]
+    public async Task<IActionResult> TrashNotes([FromBody] IdsDTO dto)
+    {
+      await _service.TrashNotesAsync(dto.Ids);
+      return NoContent();
+    }
+
+    [HttpPut("trashInGroup/{groupId}")]
+    public async Task<IActionResult> TrashNotesInGroup(long groupId)
+    {
+      await _service.TrashNotesInGroupAsync(groupId);
       return NoContent();
     }
 
@@ -82,7 +104,14 @@ namespace Galizar.LeNotes.Web.Controllers
     public async Task<IActionResult> RestoreNote(long id)
     {
       var note = await GetNote(id);
-      await _service.RestoreNote(note.Value);
+      await _service.RestoreNoteAsync(note.Value);
+      return NoContent();
+    }
+
+    [HttpPut("restoreInGroup/{groupId}")]
+    public async Task<IActionResult> RestoreNotesInGroup(long groupId)
+    {
+      await _service.RestoreNotesInGroupAsync(groupId);
       return NoContent();
     }
 
@@ -92,6 +121,42 @@ namespace Galizar.LeNotes.Web.Controllers
       var note = await GetNote(id);
       await _service.DeleteNoteAsync(note.Value);
 
+      return NoContent();
+    }
+
+    [HttpPost("selections")]
+    public ActionResult<SelectionDTO> MakeSelection([FromBody] IdsDTO dto)
+    {
+      var selection = _selectionService.CreateSelection(dto.Ids);
+      var selectionDTO = new SelectionDTO(selection.Id);
+      return CreatedAtAction(nameof(GetSelection), new { id = selection.Id}, selectionDTO);
+    }
+
+    [HttpGet("selections/{id}")]
+    public ActionResult<Selection<Note>> GetSelection(string id)
+    {
+      return _selectionService.GetSelection(id);
+    }
+
+    [HttpDelete("selections/{id}")]
+    public IActionResult DeleteSelection(string id)
+    {
+      _selectionService.DeleteSelection(id);
+      return NoContent();
+    }
+
+    [HttpDelete("deleteNotesInSelection/{selectionId}", Name = "DeleteNotesInSelection")]
+    public async Task<IActionResult> DeleteNotesInSelection(string selectionId)
+    {
+      var selection = _selectionService.DeleteSelection(selectionId);
+      await _service.DeleteNotesAsync(selection.ItemIds);
+      return NoContent();
+    }
+
+    [HttpDelete("deleteInGroup/{groupid}")]
+    public async Task<IActionResult> DeleteNotesInGroup(long groupId)
+    {
+      await _service.DeleteNotesInGroupAsync(groupId);
       return NoContent();
     }
   }

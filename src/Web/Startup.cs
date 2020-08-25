@@ -12,8 +12,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
+using Galizar.LeNotes.Core.Services.EF;
 using Galizar.LeNotes.Web.Configuration;
-using Galizar.LeNotes.Infrastructure.Data;
 
 namespace Web
 {
@@ -25,21 +25,11 @@ namespace Web
         }
 
         public IConfiguration Configuration { get; }
-        readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddCors(options => 
-            {
-                options.AddPolicy(name: MyAllowSpecificOrigins,
-                                  builder =>
-                                  {
-                                      builder.WithOrigins("http://localhost:8080");
-                                      builder.AllowAnyMethod();
-                                  });
-            });
-
+            services.AddCors();
             services.AddControllers();
             services.AddDbContext<LeNotesContext>(c => c.UseInMemoryDatabase("App Context"));
             ConfigureCoreServices.Configure(services, Configuration);
@@ -57,7 +47,11 @@ namespace Web
 
             app.UseRouting();
 
-            app.UseCors(MyAllowSpecificOrigins);
+            app.UseCors(options => {
+                options.WithOrigins("http://localhost:8080")
+                       .AllowAnyHeader()
+                       .AllowAnyMethod();
+            });
 
             app.UseAuthorization();
 

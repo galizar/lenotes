@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -6,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 
 using Galizar.LeNotes.Core.Entities;
 using Galizar.LeNotes.Core.Interfaces;
+using Galizar.LeNotes.Core.Services.Local;
+using Galizar.LeNotes.Web.Controllers.DTOs;
 
 namespace Galizar.LeNotes.Web.Controllers
 {
@@ -14,16 +17,18 @@ namespace Galizar.LeNotes.Web.Controllers
   public class GroupsController : ControllerBase
   {
     private readonly IGroupService _service;
+    private readonly ISelectionService<Group> _selectionService;
 
-    public GroupsController(IGroupService service)
+    public GroupsController(IGroupService service, ISelectionService<Group> selectionService)
     {
       _service = service;
+      _selectionService = selectionService;
     }
 
     [HttpGet()]
     public async Task<IEnumerable<Group>> AllGroups()
     {
-      return await _service.GetAllGroups();
+      return await _service.GetAllGroupsAsync();
     }
 
     [HttpPost("{name}")]
@@ -31,7 +36,7 @@ namespace Galizar.LeNotes.Web.Controllers
     {
       var group = await _service.CreateGroupAsync(name);
 
-      return CreatedAtAction(nameof(GetGroup), new {id = group.Id}, group);
+      return CreatedAtAction(nameof(CreateGroup), new {id = group.Id}, group);
     }
 
     [HttpGet("{id}")]
@@ -54,18 +59,25 @@ namespace Galizar.LeNotes.Web.Controllers
     }
 
     [HttpPut("trash/{id}")]
-    public async Task<IActionResult> TrashNote(long id)
+    public async Task<IActionResult> TrashGroup(long id)
     {
       var group = await GetGroup(id);
-      await _service.TrashGroup(group.Value);
+      await _service.TrashGroupAsync(group.Value);
+      return NoContent();
+    }
+
+    [HttpPut("trashWithIds")]
+    public async Task<IActionResult> TrashGroups([FromBody] IdsDTO dto)
+    {
+      await _service.TrashGroupsAsync(dto.Ids);
       return NoContent();
     }
 
     [HttpPut("restore/{id}")]
-    public async Task<IActionResult> RestoreNote(long id)
+    public async Task<IActionResult> RestoreGroup(long id)
     {
       var group = await GetGroup(id);
-      await _service.RestoreGroup(group.Value);
+      await _service.RestoreGroupAsync(group.Value);
       return NoContent();
     }
 
@@ -75,6 +87,35 @@ namespace Galizar.LeNotes.Web.Controllers
       var group = await GetGroup(id);
       await _service.DeleteGroupAsync(group.Value);
 
+      return NoContent();
+    }
+
+    [HttpPost("selections")]
+    public ActionResult<SelectionDTO> MakeSelection([FromBody] IdsDTO dto)
+    {
+      var selection = _selectionService.CreateSelection(dto.Ids);
+      var selectionDTO = new SelectionDTO(selection.Id);
+      return CreatedAtAction(nameof(GetSelection), new {id = selection.Id}, selectionDTO);
+    }
+
+    [HttpGet("selections/{id}")]
+    public ActionResult<Selection<Group>> GetSelection(string id)
+    {
+      return _selectionService.GetSelection(id);
+    }
+
+    [HttpDelete("selections/{id}")]
+    public IActionResult DeleteSelection(string id)
+    {
+      _selectionService.DeleteSelection(id);
+      return NoContent();
+    }
+  
+    [HttpDelete("deleteGroupsInSelection/{selectionId}", Name = "DeleteGroupsInSelection")]
+    public async Task<IActionResult> DeleteGroupsInSelection(string selectionId)
+    {
+      var selection = _selectionService.DeleteSelection(selectionId);
+      await _service.DeleteGroupsAsync(selection.ItemIds);
       return NoContent();
     }
   }

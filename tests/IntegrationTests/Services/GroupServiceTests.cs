@@ -1,35 +1,26 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
 using Galizar.LeNotes.Core.Entities;
-using Galizar.LeNotes.Core.Services;
-using Galizar.LeNotes.Infrastructure.Data;
+using Galizar.LeNotes.Core.Services.EF;
 
 namespace Galizar.LeNotes.Tests.IntegrationTests.Services
 {
   public class GroupServiceTests
   {
-    private class LeTest
-    {
-    }
-
     private readonly Group _testGroup = new Group("test group");
     private readonly LeNotesContext _leNotesContext;
-    private readonly EfRepository<Group> _groupsRepo;
     private readonly GroupService _groupService;
 
     public GroupServiceTests()
     {
-      var dbOptions = new DbContextOptionsBuilder<LeNotesContext>()
-        .UseInMemoryDatabase(databaseName: "test db")
-        .Options;
-
+      var dbOptions = TestDbOptionsBuilder.GetDbOptionsBuilder().Options;
       _leNotesContext = new LeNotesContext(dbOptions);
-      _groupsRepo = new EfRepository<Group>(_leNotesContext);
-      _groupService = new GroupService(_groupsRepo);
+      _groupService = new GroupService(_leNotesContext);
     }
 
     [Fact]
@@ -74,6 +65,36 @@ namespace Galizar.LeNotes.Tests.IntegrationTests.Services
     }
 
     [Fact]
+    public async Task TrashesGroup()
+    {
+      var group = await _groupService.CreateGroupAsync(_testGroup.Name);
+      await _groupService.TrashGroupAsync(group);
+
+      var receivedGroup = await _leNotesContext.Groups.SingleOrDefaultAsync(g => g.Id == group.Id);
+
+      Assert.True(receivedGroup.IsTrashed);
+    }
+
+    [Fact]
+    public async Task TrashesGroups()
+    {
+      var group1 = await _groupService.CreateGroupAsync(_testGroup.Name);
+      var group2 = await _groupService.CreateGroupAsync("foo");
+      var group3 = await _groupService.CreateGroupAsync("bar");
+
+      var ids = new long[] {group1.Id, group3.Id};
+      await _groupService.TrashGroupsAsync(ids);
+
+      var receivedGroup1 = await _leNotesContext.Groups.SingleOrDefaultAsync(g => g.Id == group1.Id);
+      var receivedGroup2 = await _leNotesContext.Groups.SingleOrDefaultAsync(g => g.Id == group2.Id);
+      var receivedGroup3 = await _leNotesContext.Groups.SingleOrDefaultAsync(g => g.Id == group3.Id);
+
+      Assert.True(receivedGroup1.IsTrashed);
+      Assert.False(receivedGroup2.IsTrashed);
+      Assert.True(receivedGroup3.IsTrashed);
+    }
+
+    [Fact]
     public async Task DeletesGroup()
     {
       var group = await _groupService.CreateGroupAsync(_testGroup.Name);
@@ -83,6 +104,25 @@ namespace Galizar.LeNotes.Tests.IntegrationTests.Services
 
       Assert.Null(receivedGroup);
       Assert.Equal("Detached", _leNotesContext.Entry(group).State.ToString());
+    }
+
+    [Fact]
+    public async Task DeletesGroups()
+    {
+      var group1 = await _groupService.CreateGroupAsync(_testGroup.Name);
+      var group2 = await _groupService.CreateGroupAsync("foo");
+      var group3 = await _groupService.CreateGroupAsync("bar");
+
+      var ids = new long[] {group2.Id, group3.Id};
+      await _groupService.DeleteGroupsAsync(ids);
+
+      var receivedGroup1 = await _leNotesContext.Groups.SingleOrDefaultAsync(g => g.Id == group1.Id);
+      var receivedGroup2 = await _leNotesContext.Groups.SingleOrDefaultAsync(g => g.Id == group2.Id);
+      var receivedGroup3 = await _leNotesContext.Groups.SingleOrDefaultAsync(g => g.Id == group3.Id);
+
+      Assert.NotNull(receivedGroup1);
+      Assert.Null(receivedGroup2);
+      Assert.Null(receivedGroup3);
     }
   }
 }

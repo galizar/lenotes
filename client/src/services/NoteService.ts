@@ -1,12 +1,8 @@
 import RestUtilities from './RestUtilities';
 
-export interface INote {
-  id: number,
-  name: string,
-  content: string,
-  groupId: number,
-  isTrashed: boolean 
-}
+import INote from '../interfaces/INote';
+import IdsDTO from '../interfaces/IdsDTO';
+import NoteContentDTO from '../interfaces/NoteContentDTO';
 
 let root = 'https://localhost:5001/api/Notes';
 
@@ -23,16 +19,6 @@ export default class NoteService {
     return await RestUtilities.get<INote>(`${root}/${id}`);
   }
 
-  static async getNotesOfGroup(groupId?: number) 
-  : Promise<Array<INote>> {
-
-    let notes = await this.getAll();
-
-    if (!groupId) return notes;
-
-    return notes.filter(note => note.groupId == groupId);
-  }
-
   static rename(id: number, newName: string) 
   : Promise<void> {
     return RestUtilities.put(`${root}/rename/${id}/${newName}`);
@@ -43,21 +29,76 @@ export default class NoteService {
     return RestUtilities.put(`${root}/move/${id}/${toGroupId}`);
   }
 
-  static setContent(id: number, content: string) 
-  : Promise<void> {
-    return RestUtilities.put(`${root}/setContent/${id}/${content}`);
+  static setContent(dto: NoteContentDTO): void {
+    fetch(`${root}/setContent`, {
+      method: 'PUT',
+      body: JSON.stringify(dto),
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    })
   }
 
-  static trash(id: number) : Promise<void> {
+  static trash(id: number): Promise<void> {
     return RestUtilities.put(`${root}/trash/${id}`);
   }
 
-  static restore(id: number) : Promise<void> {
+  static trashNotes(dto: IdsDTO): void {
+    fetch(`${root}/trash`, {
+      method: 'PUT',
+      body: JSON.stringify(dto),
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+  }
+
+  static trashInGroup(groupId: number) : Promise<void> {
+    return RestUtilities.put(`${root}/trashInGroup/${groupId}`);
+  }
+
+  static restore(id: number): Promise<void> {
     return RestUtilities.put(`${root}/restore/${id}`);
+  }
+
+  static restoreInGroup(groupId: number) : Promise<void> {
+    return RestUtilities.put(`${root}/restoreInGroup/${groupId}`);
   }
 
   static delete(id: number) 
   : Promise<void> {
     return RestUtilities.delete(`${root}/${id}`);
+  }
+
+  static deleteInGroup(groupId: number) : Promise<void> {
+    return RestUtilities.delete(`${root}/deleteInGroup/${groupId}`);
+  }
+  
+  static async selectNotes(dto: IdsDTO): Promise<string> {
+      
+    const res = await fetch(`${root}/selections`, {
+      method: 'POST',
+      body: JSON.stringify(dto),
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    }).catch(err => {
+      console.log(err);
+    });
+    
+    const body = res ? await res.json() : {};
+    return body.id;
+  }
+  
+  static deleteNotesInSelection(selectionId: string): void {
+    fetch(`${root}/deleteNotesInSelection/${selectionId}`, {
+      method: 'DELETE'
+    });
+  }
+  
+  static deleteSelection(selectionId: string): void {
+    fetch(`${root}/selections/${selectionId}`, {
+      method: 'DELETE'
+    });
   }
 }

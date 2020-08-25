@@ -1,10 +1,7 @@
 import RestUtilities from './RestUtilities';
 
-export interface IGroup {
-  id: number,
-  name: string,
-  isTrashed: boolean,
-}
+import IGroup from '../interfaces/IGroup';
+import IdsDTO from '../interfaces/IdsDTO';
 
 let root = 'https://localhost:5001/api/Groups';
 
@@ -31,11 +28,49 @@ export default class GroupService {
     return await RestUtilities.put(`${root}/trash/${id}`);
   }
 
+  static trashGroups(dto: IdsDTO): void {
+    fetch(`${root}/trash`, {
+      method: 'PUT',
+      body: JSON.stringify(dto),
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+  }
+
   static async restore(id: number) : Promise<void> {
     return await RestUtilities.put(`${root}/restore/${id}`);
   }
 
   static async delete(id: number) : Promise<void> {
     return await RestUtilities.delete(`${root}/${id}`);
+  }
+  
+  static async selectGroups(dto: IdsDTO): Promise<string> {
+    
+    const res = await fetch(`${root}/selections`, {
+      method: 'POST',
+      body: JSON.stringify(dto),
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    }).catch(err => {
+      console.log(err);
+    });
+    
+    const body = res ? await res.json() : {};
+    return body.id;
+  }
+
+  static deleteGroupsInSelection(selectionId: string): void {
+    fetch(`${root}/deleteGroupsInSelection/${selectionId}`, {
+      method: 'DELETE',
+    });
+  }
+  
+  static deleteSelection(id: string): void {
+    fetch(`${root}/selections/${id}`, {
+      method: 'DELETE'
+    });
   }
 }

@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 
 using Galizar.LeNotes.Core.Entities;
 
-namespace Galizar.LeNotes.Infrastructure.Data
+namespace Galizar.LeNotes.Core.Services.EF
 {
   public class LeNotesContext : DbContext
   {
@@ -10,7 +10,7 @@ namespace Galizar.LeNotes.Infrastructure.Data
     {
     }
 
-    public DbSet<Note> Notes { get; set; }
     public DbSet<Group> Groups { get; set; }
+    public DbSet<Note> Notes { get; set; }
   }
 }
