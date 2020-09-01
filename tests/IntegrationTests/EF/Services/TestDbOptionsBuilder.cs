@@ -2,9 +2,9 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-using Galizar.LeNotes.Core.Services.EF;
+using Galizar.LeNotes.Infrastructure.Data;
 
-namespace Galizar.LeNotes.Tests.IntegrationTests.Services
+namespace Galizar.LeNotes.Tests.IntegrationTests.EF.Services
 {
   public static class TestDbOptionsBuilder
   {

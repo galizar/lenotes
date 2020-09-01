@@ -1,8 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-using Microsoft.EntityFrameworkCore;
-
 using Galizar.LeNotes.Core.Entities;
 using Galizar.LeNotes.Core.Interfaces;
 
@@ -10,79 +8,82 @@ namespace Galizar.LeNotes.Core.Services.EF
 {
   public class GroupService : IGroupService
   {
-    LeNotesContext _context;
+    IAsyncRepository<Group> _repository;
 
-    public GroupService(LeNotesContext context) 
+    public GroupService(IAsyncRepository<Group> repository) 
     {
-      _context = context;
+      _repository = repository;
     }
 
     public async Task<Group> CreateGroupAsync(string name) 
     {
       var group = new Group(name);
 
-      await _context.Groups.AddAsync(group);
-      await _context.SaveChangesAsync();
+      _repository.CreateAsync(group);
 
       return group;
     }
 
     public async Task<IEnumerable<Group>> GetAllGroupsAsync()
     {
-      return await _context.Groups.ToListAsync();
+      return await _repository.GetAllAsync();
     }
 
     public async Task<Group> GetGroupByIdAsync(long id)
     {
-      return await _context.Groups.FindAsync(id);
+      return await _repository.GetByIdAsync(id);
     }
 
     public async Task RenameGroupAsync(Group group, string newName)
     {
       group.Name = newName;
-      await _context.SaveChangesAsync();
+      await _repository.UpdateAsync(group);
     }
 
     public async Task TrashGroupAsync(Group group)
     {
       if (group.IsTrashed) return;
       group.IsTrashed = true;
-      await _context.SaveChangesAsync();
+      await _repository.UpdateAsync(group);
     }
 
     public async Task TrashGroupsAsync(IEnumerable<long> groupIds)
     {
+      var groups = new List<Group>();
       foreach (var id in groupIds)
       {
         var group = await GetGroupByIdAsync(id);
         if (group == null || group.IsTrashed) continue;
         group.IsTrashed = true;
+        groups.Add(group);
       }
-      await _context.SaveChangesAsync();
+
+      await _repository.BatchUpdateAsync(groups);
     }
 
     public async Task RestoreGroupAsync(Group group)
     {
       if (!group.IsTrashed) return;
       group.IsTrashed = false;
-      await _context.SaveChangesAsync();
+      await _repository.UpdateAsync(group);
     }
 
     public async Task DeleteGroupAsync(Group group)
     {
-      _context.Groups.Remove(group);
-      await _context.SaveChangesAsync();
+      await _repository.DeleteAsync(group);
     }
 
     public async Task DeleteGroupsAsync(IEnumerable<long> groupIds)
     {
+      var groups = new List<Group>();
       foreach (var id in groupIds)
       {
         var group = await GetGroupByIdAsync(id);
         if (group == null) continue;
-        _context.Groups.Remove(group);
+        groups.Add(group);
       }
-      await _context.SaveChangesAsync();
+
+      await _repository.BatchDeleteAsync(groups);
     }
   }
 }

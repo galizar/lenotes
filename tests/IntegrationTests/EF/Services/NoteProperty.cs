@@ -1,4 +1,4 @@
-namespace Galizar.LeNotes.Tests.IntegrationTests.Services
+namespace Galizar.LeNotes.Tests.IntegrationTests.EF.Services
 {
   public interface NoteProperty {}
 

@@ -8,23 +8,25 @@ using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 using Galizar.LeNotes.Core.Entities;
-using Galizar.LeNotes.Core.Interfaces;
+using Galizar.LeNotes.Infrastructure.Data;
 using Galizar.LeNotes.Core.Services.EF;
 
-namespace Galizar.LeNotes.Tests.IntegrationTests.Services
+namespace Galizar.LeNotes.Tests.IntegrationTests.EF.Services
 {
   public class NoteServiceTests
   {
 
     private readonly Note _testNote = new Note("test note", 1);
     private readonly LeNotesContext _leNotesContext;
-    private readonly INoteService _noteService;
+    private readonly NoteService _noteService;
+    private readonly EFRepository<Note> _repository;
 
     public NoteServiceTests()
     {
       var dbOptions = TestDbOptionsBuilder.GetDbOptionsBuilder().Options;
       _leNotesContext = new LeNotesContext(dbOptions);
-      _noteService = new NoteService(_leNotesContext);
+      _repository = new EFRepository<Note>(_leNotesContext);
+      _noteService = new NoteService(_repository);
     }
 
 

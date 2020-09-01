@@ -1,3 +1,4 @@
+using System;
 using System.Text.Json;
 
 namespace Galizar.LeNotes.Core.Entities 
@@ -8,7 +9,7 @@ namespace Galizar.LeNotes.Core.Entities
     public long GroupId { get; set; }
     public string Content { get; set; }
 
-    public Note(string name, long groupId) 
+    public Note(string name, long groupId)
     {
       Name = name;
       GroupId = groupId;

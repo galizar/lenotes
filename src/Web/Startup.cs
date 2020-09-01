@@ -12,8 +12,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-using Galizar.LeNotes.Core.Services.EF;
+using Galizar.LeNotes.Infrastructure.Data;
 using Galizar.LeNotes.Web.Configuration;
+
 
 namespace Web
 {

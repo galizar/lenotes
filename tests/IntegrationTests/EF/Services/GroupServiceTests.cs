@@ -7,20 +7,23 @@ using Xunit;
 
 using Galizar.LeNotes.Core.Entities;
 using Galizar.LeNotes.Core.Services.EF;
+using Galizar.LeNotes.Infrastructure.Data;
 
-namespace Galizar.LeNotes.Tests.IntegrationTests.Services
+namespace Galizar.LeNotes.Tests.IntegrationTests.EF.Services
 {
   public class GroupServiceTests
   {
     private readonly Group _testGroup = new Group("test group");
     private readonly LeNotesContext _leNotesContext;
     private readonly GroupService _groupService;
+    private readonly EFRepository<Group> _repository;
 
     public GroupServiceTests()
     {
       var dbOptions = TestDbOptionsBuilder.GetDbOptionsBuilder().Options;
       _leNotesContext = new LeNotesContext(dbOptions);
-      _groupService = new GroupService(_leNotesContext);
+      _repository = new EFRepository<Group>(_leNotesContext);
+      _groupService = new GroupService(_repository);
     }
 
     [Fact]
