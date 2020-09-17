@@ -4,7 +4,13 @@ import INote from '../interfaces/INote';
 import IdsDTO from '../interfaces/IdsDTO';
 import NoteContentDTO from '../interfaces/NoteContentDTO';
 
-let root = 'https://localhost:5001/api/Notes';
+let root: string;
+
+if (process.env.NOTES_ROOT_URL) {
+  root = process.env.NOTES_ROOT_URL;
+} else {
+  throw new Error('Root URL env var for Notes api is not defined');
+}
 
 export default class NoteService {
   static async getAll() : Promise<Array<INote>> {

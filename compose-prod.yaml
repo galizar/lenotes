@@ -1,0 +1,20 @@
+version: '3.8'
+services:
+  server:
+    image: compose-lenotes-server:prod
+    build:
+      context: ./server
+      dockerfile: ./src/Web/Dockerfile
+    ports:
+      - '5000:80'
+
+  client:
+    image: compose-lenotes-client:prod
+    build:
+      context: ./client
+      dockerfile: ./ProdDockerfile
+      args:
+        - GROUPS_ROOT_URL
+        - NOTES_ROOT_URL
+    ports:
+      - '8080:8080'

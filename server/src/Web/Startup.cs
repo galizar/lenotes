@@ -44,12 +44,13 @@ namespace Web
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
 
             app.UseRouting();
 
             app.UseCors(options => {
-                options.WithOrigins("http://localhost:8080")
+                options.WithOrigins("http://localhost:8080",
+                        "http://0.0.0.0:8080")
                        .AllowAnyHeader()
                        .AllowAnyMethod();
             });

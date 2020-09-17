@@ -3,7 +3,13 @@ import RestUtilities from './RestUtilities';
 import IGroup from '../interfaces/IGroup';
 import IdsDTO from '../interfaces/IdsDTO';
 
-let root = 'https://localhost:5001/api/Groups';
+let root: string; 
+
+if (process.env.GROUPS_ROOT_URL) {
+  root = process.env.GROUPS_ROOT_URL;
+} else {
+  throw new Error('Root URL env var for Groups api is not defined');
+}
 
 export default class GroupService { 
   static async create(name: string) : Promise<IGroup> {
