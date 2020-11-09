@@ -3,22 +3,27 @@ services:
   server:
     image: compose-lenotes-server:dev
     build:
-      context: ./server
-      dockerfile: ./src/Web/Dockerfile
+      context: .
+      args:
+        - GROUPS_ROOT_URL=http://localhost:5000/Groups
+        - NOTES_ROOT_URL=http://localhost:5000/Notes
     ports:
-      - '5000:80'
+      - '5000:5000'
+    environment:
+      - CLIENT_URL=http://localhost:8080
+      - PORT=5000
 
   client:
     image: compose-lenotes-client:dev
     build:
-      context: ./client
+      context: ./src/Client
       dockerfile: ./DevDockerfile
     ports:
       - '8080:8080'
     environment:
-      - GROUPS_ROOT_URL
-      - NOTES_ROOT_URL
+      - GROUPS_ROOT_URL=http://localhost:5000/Groups
+      - NOTES_ROOT_URL=http://localhost:5000/Notes
     volumes:
       - type: bind
-        source: ./client/
+        source: ./src/Client
         target: /app/

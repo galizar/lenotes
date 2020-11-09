@@ -6,13 +6,16 @@ services:
       context: ./server
       dockerfile: ./src/Web/Dockerfile
     ports:
-      - '5000:80'
+      - '5000:5000'
+    environment:
+      - CLIENT_URL=http://localhost:8080
+      - PORT=5000
 
   client:
     image: compose-lenotes-client:prod
     build:
       context: ./client
-      dockerfile: ./ProdDockerfile
+      dockerfile: ./Dockerfile
       args:
         - GROUPS_ROOT_URL
         - NOTES_ROOT_URL

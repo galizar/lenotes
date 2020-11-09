@@ -1,0 +1,12 @@
+{
+    "profiles": {
+        "Web": {
+            "commandName": "Project",
+            "launchBrowser": false,
+            "environmentVariables": {
+                "PORT": "5001",
+                "CLIENT_URL": "http://localhost:8080"
+            }
+        }
+    }
+}

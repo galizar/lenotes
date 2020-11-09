@@ -1,10 +1,5 @@
-.dockerignore
-.git
-.gitignore
-.vs
-.vscode
-**/bin/
-**/obj/
-**/.idea/
-**/node_modules/
-**/dist/
+**/node_modules
+**/obj
+**/bin
+**/.idea
+**/dist
