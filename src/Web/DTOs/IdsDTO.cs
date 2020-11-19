@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Galizar.LeNotes.Web.Controllers.DTOs
+namespace Galizar.LeNotes.Web.DTOs
 {
   public class IdsDTO
   {

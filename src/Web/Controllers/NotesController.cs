@@ -8,21 +8,21 @@ using Microsoft.AspNetCore.Mvc;
 using Galizar.LeNotes.Core.Entities;
 using Galizar.LeNotes.Core.Interfaces;
 using Galizar.LeNotes.Core.Services.Local;
-using Galizar.LeNotes.Web.Controllers.DTOs;
+using Galizar.LeNotes.Web.DTOs;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace Galizar.LeNotes.Web.Controllers
 {
-  public class NoteContentDTO {
-    public long Id { get; set; }
-    public string Content { get; set; }
-  }
-
   [ApiController]
   [Route("api/[controller]")]
+  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
   public class NotesController : ControllerBase
   {
     private readonly INoteService _service;
     private readonly ISelectionService<Note> _selectionService;
+    private readonly string _subject = JwtRegisteredClaimNames.Sub;
 
     public NotesController(INoteService service, ISelectionService<Note> selectionService)
     {
@@ -31,10 +31,9 @@ namespace Galizar.LeNotes.Web.Controllers
     }
 
     [HttpPost("{name}/{groupId}")]
-    [ProducesResponseType(StatusCodes.Status201Created)]
     public async Task<ActionResult<Note>> CreateNote(string name, long groupId)
     {
-      var username = User.FindFirstValue("NameIdentifier");
+      var username = User.FindFirstValue(_subject);
       var note = await _service.CreateNoteAsync(name, groupId, username);
 
       return CreatedAtAction(nameof(GetNote), new { id = note.Id }, note);
@@ -43,7 +42,7 @@ namespace Galizar.LeNotes.Web.Controllers
     [HttpGet()]
     public async Task<IEnumerable<Note>> AllNotes()
     {
-      var username = User.FindFirstValue("NameIdentifier");
+      var username = User.FindFirstValue(_subject);
       return await _service.GetAllNotesAsync(username);
     }
 

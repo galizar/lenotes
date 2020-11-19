@@ -16,7 +16,7 @@ namespace Galizar.LeNotes.Tests.IntegrationTests.EF.Services
   public class NoteServiceTests
   {
 
-    private readonly Note _testNote = new Note("test note", 1);
+    private readonly Note _testNote = new Note("test note", 1, "Joe test");
     private readonly LeNotesContext _leNotesContext;
     private readonly NoteService _noteService;
     private readonly EFRepository<Note> _repository;
@@ -33,7 +33,8 @@ namespace Galizar.LeNotes.Tests.IntegrationTests.EF.Services
     [Fact]
     public async Task CreatesNote()
     {
-      var note = await _noteService.CreateNoteAsync(_testNote.Name, _testNote.GroupId);
+      var note = 
+        await _noteService.CreateNoteAsync(_testNote.Name, _testNote.GroupId, _testNote.OwnerUsername);
 
       var receivedNote = await _leNotesContext.Notes.SingleOrDefaultAsync(n => n.Id == note.Id);
 
@@ -45,7 +46,8 @@ namespace Galizar.LeNotes.Tests.IntegrationTests.EF.Services
     [Fact]
     public async Task GetsExistingNote() 
     {
-      var note = await _noteService.CreateNoteAsync(_testNote.Name, _testNote.GroupId);
+      var note = 
+        await _noteService.CreateNoteAsync(_testNote.Name, _testNote.GroupId, _testNote.OwnerUsername);
       var receivedNote = await _leNotesContext.Notes.SingleOrDefaultAsync(n => n.Id == note.Id);
 
       Assert.Equal(note.ToString(), receivedNote.ToString());
@@ -54,7 +56,8 @@ namespace Galizar.LeNotes.Tests.IntegrationTests.EF.Services
     [Fact]
     public async Task RenamesNote()
     {
-      var note = await _noteService.CreateNoteAsync(_testNote.Name, _testNote.GroupId);
+      var note = 
+        await _noteService.CreateNoteAsync(_testNote.Name, _testNote.GroupId, _testNote.OwnerUsername);
       var expectedNote = note.DeepCopy();
       
       string newName = "daisy bell";
@@ -69,7 +72,8 @@ namespace Galizar.LeNotes.Tests.IntegrationTests.EF.Services
     [Fact]
     public async Task MovesNoteToGroup()
     {
-      var note = await _noteService.CreateNoteAsync(_testNote.Name, _testNote.GroupId);
+      var note = 
+        await _noteService.CreateNoteAsync(_testNote.Name, _testNote.GroupId, _testNote.OwnerUsername);
       var expectedNote = note.DeepCopy();
       
       long newGroupId = 3;
@@ -83,7 +87,8 @@ namespace Galizar.LeNotes.Tests.IntegrationTests.EF.Services
     [Fact]
     public async Task SetsNoteContent()
     {
-      var note = await _noteService.CreateNoteAsync(_testNote.Name, _testNote.GroupId);
+      var note = 
+        await _noteService.CreateNoteAsync(_testNote.Name, _testNote.GroupId, _testNote.OwnerUsername);
       var expectedNote = note.DeepCopy();
       
         string newContent = "new content";
@@ -98,7 +103,8 @@ namespace Galizar.LeNotes.Tests.IntegrationTests.EF.Services
     [Fact]
     public async Task TrashesNote()
     {
-      var note = await _noteService.CreateNoteAsync(_testNote.Name, _testNote.GroupId);
+      var note = 
+        await _noteService.CreateNoteAsync(_testNote.Name, _testNote.GroupId, _testNote.OwnerUsername);
 
       await _noteService.TrashNoteAsync(note);
 
@@ -110,9 +116,9 @@ namespace Galizar.LeNotes.Tests.IntegrationTests.EF.Services
     [Fact]
     public async Task TrashesNotes()
     {
-      var noteA = await _noteService.CreateNoteAsync(_testNote.Name, _testNote.GroupId);
-      var noteB = await _noteService.CreateNoteAsync("foo note", _testNote.GroupId);
-      var noteC = await _noteService.CreateNoteAsync("bar note", 3);
+      var noteA = await _noteService.CreateNoteAsync(_testNote.Name, _testNote.GroupId, _testNote.OwnerUsername);
+      var noteB = await _noteService.CreateNoteAsync("foo note", _testNote.GroupId, _testNote.OwnerUsername);
+      var noteC = await _noteService.CreateNoteAsync("bar note", 3, _testNote.OwnerUsername);
 
       var ids = new long[] {noteA.Id, noteB.Id};
       await _noteService.TrashNotesAsync(ids);
@@ -129,14 +135,14 @@ namespace Galizar.LeNotes.Tests.IntegrationTests.EF.Services
     [Fact]
     public async Task TrashesNotesInGroup()
     {
-      await _noteService.CreateNoteAsync(_testNote.Name, _testNote.GroupId);
-      await _noteService.CreateNoteAsync("foo note", _testNote.GroupId);
-      await _noteService.CreateNoteAsync("bar note", _testNote.GroupId);
-      var onlyNoteLeft = await _noteService.CreateNoteAsync("baz note", 2);
+      await _noteService.CreateNoteAsync(_testNote.Name, _testNote.GroupId, _testNote.OwnerUsername);
+      await _noteService.CreateNoteAsync("foo note", _testNote.GroupId, _testNote.OwnerUsername);
+      await _noteService.CreateNoteAsync("bar note", _testNote.GroupId, _testNote.OwnerUsername);
+      var onlyNoteLeft = await _noteService.CreateNoteAsync("baz note", 2, _testNote.OwnerUsername);
 
       await _noteService.TrashNotesInGroupAsync(_testNote.GroupId);
 
-      var notes = await _noteService.GetAllNotesAsync();
+      var notes = await _noteService.GetAllNotesAsync(_testNote.OwnerUsername);
 
       foreach (Note note in notes)
       {
@@ -150,7 +156,7 @@ namespace Galizar.LeNotes.Tests.IntegrationTests.EF.Services
     [Fact]
     public async Task RestoresNote()
     {
-      var note = await _noteService.CreateNoteAsync(_testNote.Name, _testNote.GroupId);
+      var note = await _noteService.CreateNoteAsync(_testNote.Name, _testNote.GroupId, _testNote.OwnerUsername);
       
       await _noteService.TrashNoteAsync(note);
       await _noteService.RestoreNoteAsync(note);
@@ -163,9 +169,9 @@ namespace Galizar.LeNotes.Tests.IntegrationTests.EF.Services
     [Fact]
     public async Task RestoresNotesInGroup()
     {
-      var noteA = await _noteService.CreateNoteAsync(_testNote.Name, _testNote.GroupId);
-      var noteB = await _noteService.CreateNoteAsync("foo note", _testNote.GroupId);
-      var noteC = await _noteService.CreateNoteAsync("bar note", 3);
+      var noteA = await _noteService.CreateNoteAsync(_testNote.Name, _testNote.GroupId, _testNote.OwnerUsername);
+      var noteB = await _noteService.CreateNoteAsync("foo note", _testNote.GroupId, _testNote.OwnerUsername);
+      var noteC = await _noteService.CreateNoteAsync("bar note", 3, _testNote.OwnerUsername);
 
       await _noteService.TrashNoteAsync(noteA);
       await _noteService.TrashNoteAsync(noteB);
@@ -195,7 +201,8 @@ namespace Galizar.LeNotes.Tests.IntegrationTests.EF.Services
     [Fact]
     public async Task DeletesNote()
     {
-      var note = await _noteService.CreateNoteAsync(_testNote.Name, _testNote.GroupId);
+      var note = 
+        await _noteService.CreateNoteAsync(_testNote.Name, _testNote.GroupId, _testNote.OwnerUsername);
 
       await _noteService.DeleteNoteAsync(note);
 
@@ -208,9 +215,9 @@ namespace Galizar.LeNotes.Tests.IntegrationTests.EF.Services
     [Fact]
     public async Task DeletesNotes()
     {
-      var noteA = await _noteService.CreateNoteAsync(_testNote.Name, _testNote.GroupId);
-      var noteB = await _noteService.CreateNoteAsync("foo note", _testNote.GroupId);
-      var noteC = await _noteService.CreateNoteAsync("bar note", 3);
+      var noteA = await _noteService.CreateNoteAsync(_testNote.Name, _testNote.GroupId, _testNote.OwnerUsername);
+      var noteB = await _noteService.CreateNoteAsync("foo note", _testNote.GroupId, _testNote.OwnerUsername);
+      var noteC = await _noteService.CreateNoteAsync("bar note", 3, _testNote.OwnerUsername);
 
       var ids = new long[] {noteA.Id, noteC.Id};
       await _noteService.DeleteNotesAsync(ids);
@@ -227,9 +234,9 @@ namespace Galizar.LeNotes.Tests.IntegrationTests.EF.Services
     [Fact]
     public async Task DeletesNotesInGroup()
     {
-      var noteA = await _noteService.CreateNoteAsync(_testNote.Name, _testNote.GroupId);
-      var noteB = await _noteService.CreateNoteAsync("foo note", _testNote.GroupId);
-      var noteC = await _noteService.CreateNoteAsync("bar note", 3);
+      var noteA = await _noteService.CreateNoteAsync(_testNote.Name, _testNote.GroupId, _testNote.OwnerUsername);
+      var noteB = await _noteService.CreateNoteAsync("foo note", _testNote.GroupId, _testNote.OwnerUsername);
+      var noteC = await _noteService.CreateNoteAsync("bar note", 3, _testNote.OwnerUsername);
 
       await _noteService.DeleteNotesInGroupAsync(_testNote.GroupId);
 

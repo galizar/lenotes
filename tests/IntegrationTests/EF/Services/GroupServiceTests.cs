@@ -13,7 +13,8 @@ namespace Galizar.LeNotes.Tests.IntegrationTests.EF.Services
 {
   public class GroupServiceTests
   {
-    private readonly Group _testGroup = new Group("test group");
+    private static readonly string _testUsername = "Joe Test";
+    private readonly string _testGroupName = "Test group";
     private readonly LeNotesContext _leNotesContext;
     private readonly GroupService _groupService;
     private readonly EFRepository<Group> _repository;
@@ -29,17 +30,17 @@ namespace Galizar.LeNotes.Tests.IntegrationTests.EF.Services
     [Fact]
     public async Task CreatesGroup()
     {
-      var group = await _groupService.CreateGroupAsync(_testGroup.Name);
+      var group = await _groupService.CreateGroupAsync(_testGroupName, _testUsername);
 
       var receivedGroup = await _leNotesContext.Groups.SingleOrDefaultAsync(g => g.Id == group.Id);
 
-      Assert.Equal(_testGroup.Name, receivedGroup.Name);
+      Assert.Equal(_testGroupName, receivedGroup.Name);
     }
 
     [Fact]
     public async Task GetsInContextGroup()
     {
-      var group = await _groupService.CreateGroupAsync(_testGroup.Name);
+      var group = await _groupService.CreateGroupAsync(_testGroupName, _testUsername);
       var receivedGroup = await _groupService.GetGroupByIdAsync(group.Id);
 
       Assert.Equal(group.ToString(), receivedGroup.ToString());
@@ -48,7 +49,7 @@ namespace Galizar.LeNotes.Tests.IntegrationTests.EF.Services
     [Fact]
     public async Task GetsNotInContextGroup()
     {
-      var group = await _groupService.CreateGroupAsync(_testGroup.Name);
+      var group = await _groupService.CreateGroupAsync(_testGroupName, _testUsername);
       
       // Detach group from context to trigger a database request
       _leNotesContext.Entry(group).State = EntityState.Detached;
@@ -61,7 +62,7 @@ namespace Galizar.LeNotes.Tests.IntegrationTests.EF.Services
     [Fact]
     public async Task RenamesGroup()
     {
-      var group = await _groupService.CreateGroupAsync(_testGroup.Name);
+      var group = await _groupService.CreateGroupAsync(_testGroupName, _testUsername);
       await _groupService.RenameGroupAsync(group, "new test group");
 
       Assert.Equal("new test group", group.Name);
@@ -70,7 +71,7 @@ namespace Galizar.LeNotes.Tests.IntegrationTests.EF.Services
     [Fact]
     public async Task TrashesGroup()
     {
-      var group = await _groupService.CreateGroupAsync(_testGroup.Name);
+      var group = await _groupService.CreateGroupAsync(_testGroupName, _testUsername);
       await _groupService.TrashGroupAsync(group);
 
       var receivedGroup = await _leNotesContext.Groups.SingleOrDefaultAsync(g => g.Id == group.Id);
@@ -81,9 +82,9 @@ namespace Galizar.LeNotes.Tests.IntegrationTests.EF.Services
     [Fact]
     public async Task TrashesGroups()
     {
-      var group1 = await _groupService.CreateGroupAsync(_testGroup.Name);
-      var group2 = await _groupService.CreateGroupAsync("foo");
-      var group3 = await _groupService.CreateGroupAsync("bar");
+      var group1 = await _groupService.CreateGroupAsync(_testGroupName, _testUsername);
+      var group2 = await _groupService.CreateGroupAsync("foo", _testUsername);
+      var group3 = await _groupService.CreateGroupAsync("bar", _testUsername);
 
       var ids = new long[] {group1.Id, group3.Id};
       await _groupService.TrashGroupsAsync(ids);
@@ -100,7 +101,7 @@ namespace Galizar.LeNotes.Tests.IntegrationTests.EF.Services
     [Fact]
     public async Task DeletesGroup()
     {
-      var group = await _groupService.CreateGroupAsync(_testGroup.Name);
+      var group = await _groupService.CreateGroupAsync(_testGroupName, _testUsername);
       await _groupService.DeleteGroupAsync(group);
 
       var receivedGroup = await _leNotesContext.Groups.SingleOrDefaultAsync(g => g.Id == group.Id);
@@ -112,9 +113,9 @@ namespace Galizar.LeNotes.Tests.IntegrationTests.EF.Services
     [Fact]
     public async Task DeletesGroups()
     {
-      var group1 = await _groupService.CreateGroupAsync(_testGroup.Name);
-      var group2 = await _groupService.CreateGroupAsync("foo");
-      var group3 = await _groupService.CreateGroupAsync("bar");
+      var group1 = await _groupService.CreateGroupAsync(_testGroupName, _testUsername);
+      var group2 = await _groupService.CreateGroupAsync("foo", _testUsername);
+      var group3 = await _groupService.CreateGroupAsync("bar", _testUsername);
 
       var ids = new long[] {group2.Id, group3.Id};
       await _groupService.DeleteGroupsAsync(ids);

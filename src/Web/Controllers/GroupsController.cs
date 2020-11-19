@@ -9,37 +9,42 @@ using Microsoft.AspNetCore.Mvc;
 using Galizar.LeNotes.Core.Entities;
 using Galizar.LeNotes.Core.Interfaces;
 using Galizar.LeNotes.Core.Services.Local;
-using Galizar.LeNotes.Web.Controllers.DTOs;
+using Galizar.LeNotes.Web.DTOs;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace Galizar.LeNotes.Web.Controllers
 {
   [ApiController]
   [Route("api/[controller]")]
+  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
   public class GroupsController : ControllerBase
   {
     private readonly IGroupService _service;
     private readonly ISelectionService<Group> _selectionService;
-
+    private readonly string _subject = JwtBearerDefaults.AuthenticationScheme;
+    
     public GroupsController(IGroupService service, ISelectionService<Group> selectionService)
     {
       _service = service;
       _selectionService = selectionService;
     }
 
-    [HttpGet()]
-    public async Task<IEnumerable<Group>> AllGroups()
-    {
-      var username = User.FindFirstValue("NameIdentifier");
-      return await _service.GetAllGroupsAsync(username);
-    }
-
     [HttpPost("{name}")]
     public async Task<ActionResult<Group>> CreateGroup(string name)
     {
-      var username = User.FindFirstValue("NameIdentifier");
+      var username = User.FindFirstValue(_subject);
       var group = await _service.CreateGroupAsync(name, username);
 
       return CreatedAtAction(nameof(CreateGroup), new {id = group.Id}, group);
+    }
+    
+    [HttpGet]
+    public async Task<IEnumerable<Group>> AllGroups()
+    {
+      var username = User.FindFirstValue(_subject);
+      return await _service.GetAllGroupsAsync(username);
     }
 
     [HttpGet("{id}")]
