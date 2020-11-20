@@ -1,17 +1,16 @@
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
-
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 using Galizar.LeNotes.Core.Entities;
 using Galizar.LeNotes.Core.Interfaces;
 using Galizar.LeNotes.Core.Services.Local;
-using Galizar.LeNotes.Web.DTOs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.JsonWebTokens;
+using Web.DTOs;
 
 namespace Galizar.LeNotes.Web.Controllers
 {

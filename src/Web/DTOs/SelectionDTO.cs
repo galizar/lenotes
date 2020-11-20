@@ -1,4 +1,4 @@
-namespace Galizar.LeNotes.Web.DTOs
+namespace Web.DTOs
 {
   public class SelectionDTO
   {

@@ -1,4 +1,4 @@
-namespace Galizar.LeNotes.Web.DTOs
+namespace Web.DTOs
 {
   public class NoteContentDTO {
     public long Id { get; set; }

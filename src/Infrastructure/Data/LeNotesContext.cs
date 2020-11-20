@@ -12,5 +12,6 @@ namespace Galizar.LeNotes.Infrastructure.Data
         
         public DbSet<Group> Groups { get; set; }
         public DbSet<Note> Notes { get; set; }
+        public DbSet<User> Users { get; set; }
     }
 }
