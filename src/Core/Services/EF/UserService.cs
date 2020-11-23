@@ -7,9 +7,9 @@ namespace Galizar.LeNotes.Core.Services.EF
     public class UserService : IUserService
     {
         private IAsyncRepository<User> _repository;
-        private IPasswordHasher _hasher;
+        private ILeNotesPasswordHasher _hasher;
 
-        public UserService(IAsyncRepository<User> repository, IPasswordHasher hasher)
+        public UserService(IAsyncRepository<User> repository, ILeNotesPasswordHasher hasher)
         {
             _repository = repository;
             _hasher = hasher;
@@ -17,7 +17,8 @@ namespace Galizar.LeNotes.Core.Services.EF
         
         public async Task<User> CreateAsync(string username, string email, string password)
         {
-            var user = new User(username, email, _hasher.Hash(password));
+            var user = new User(username, email, password);
+            user.HashedPassword = _hasher.Hash(user, password);
             
             return await _repository.CreateAsync(user);
         }
@@ -30,7 +31,7 @@ namespace Galizar.LeNotes.Core.Services.EF
 
         public async Task ChangePasswordAsync(User user, string newPassword)
         {
-            user.HashedPassword = _hasher.Hash(newPassword);
+            user.HashedPassword = _hasher.Hash(user, newPassword);
             await _repository.UpdateAsync(user);
         }
 
